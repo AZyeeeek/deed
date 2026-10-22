@@ -191,7 +191,11 @@ async function writeTypes(list){
   if(localMode){ const d=lsGet(); d.types=list; lsPut(d); return; }
   return db.doc("config/actions").set({types:list});
 }
-function startLocal(){ localMode=true; isOwner=true; loadLocal(); render(); }
+function startLocal(){
+  localMode=true; isOwner=true;
+  let id=null; try{ id=localStorage.getItem(LS+"_device"); if(!id){ id="d_"+uid(); localStorage.setItem(LS+"_device",id); } }catch(e){ id="d_"+uid(); }
+  me.id=id; loadLocal(); render();
+}
 
 /* ---------- boot ---------- */
 render();
@@ -218,7 +222,7 @@ async function resolveNames(){
   if(!user) return;
   try{ const ps=await user.profiles(all.map(d=>d.id)); for(const id in ps) names[id]=ps[id]?.name||""; render(); }catch(e){}
 }
-const displayName=d=>d.label||names[d.id]||"Unnamed student";
+const displayName=d=>d.label||names[d.id]||("Student #"+String(d.id).slice(-4).toUpperCase());
 
 function saveMine(){
   const snap={label:mine.label,entries:mine.entries,redemptions:mine.redemptions,updated:Date.now()};
@@ -261,9 +265,6 @@ function studentHTML(){
   <section class="panel">
     <h2>Mistakes and their actions</h2>
     <p class="muted">Every mistake is fixed by a connected action. If one of these happened, tap “I did this”, then do the action.</p>
-    <label class="field" for="label">Your name and class
-      <input type="text" id="label" placeholder="e.g. Aziza, 7B" value="${esc(mine.label)}" maxlength="60">
-    </label>
     <div class="list">
       ${types.map(t=>`<div class="task"><div class="what"><strong>${esc(t.label)}</strong><span class="meta"><span class="arrow">→</span> ${esc(t.action)}</span></div><button class="btn small" data-act="admit" data-type="${esc(t.key)}">I did this</button></div>`).join("")}
     </div>
@@ -374,7 +375,7 @@ document.addEventListener("click",async e=>{
   const b=e.target.closest("[data-act]"); if(!b) return;
   const a=b.dataset.act;
   if(a==="admit"){
-    if(!me.id){ $("#label")?.focus(); return toast("Write your name and class first"); }
+    if(!me.id) return toast("Couldn't save on this device");
     const type=b.dataset.type;
     mine.entries.push({id:uid(),ts:Date.now(),type,note:"",status:"open"});
     render(false); await saveMine(); toast(`Thank you for being honest. Next: ${typeOf(type).action}`);
