@@ -1,0 +1,404 @@
+<title>Make It Right</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a school notebook — one narrow working column for students; a wider ledger with tabs for the teacher. */
+:root{
+  --bg:#f3f6f4; --surface:#ffffff; --sunk:#e7eeea; --line:#d3ddd8;
+  --ink:#16302b; --muted:#5b726c;
+  --accent:#1f6f62; --accent-ink:#ffffff; --accent-soft:#d6ebe5;
+  --tea:#b86a12; --tea-soft:#f8e8d2;
+  --good:#2f7d3a; --warn:#a45c00; --bad:#b03a2e;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1917; --surface:#16231f; --sunk:#1c2c27; --line:#2a3d37;
+  --ink:#e4efeb; --muted:#93aaa3;
+  --accent:#4fb3a1; --accent-ink:#0b1a17; --accent-soft:#1d3b35;
+  --tea:#e6a04f; --tea-soft:#3a2a16;
+  --good:#6cc177; --warn:#e3a14a; --bad:#ec7a6c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1917; --surface:#16231f; --sunk:#1c2c27; --line:#2a3d37;
+  --ink:#e4efeb; --muted:#93aaa3;
+  --accent:#4fb3a1; --accent-ink:#0b1a17; --accent-soft:#1d3b35;
+  --tea:#e6a04f; --tea-soft:#3a2a16;
+  --good:#6cc177; --warn:#e3a14a; --bad:#ec7a6c; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+.narrow{max-width:620px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(28px,6vw,40px);font-weight:800;line-height:1.05}
+h2{font-size:20px;font-weight:700}
+h3{font-size:16px;font-weight:700}
+p{margin:0}
+.muted{color:var(--muted)}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.tagline{max-width:52ch;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+label.field{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14px;flex:1;min-width:0}
+input[type=text],textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+textarea{min-height:64px;resize:vertical}
+button{font:inherit;font-weight:600;border-radius:8px;border:1px solid transparent;padding:9px 14px;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.choice:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.btn{background:var(--accent);color:var(--accent-ink)}
+.btn:hover{filter:brightness(1.08)}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{background:var(--sunk)}
+.btn-tea{background:var(--tea);color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.small{font-size:13px;padding:6px 10px}
+
+/* mistake choices */
+.choices{display:grid;gap:8px}
+.choice{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);cursor:pointer}
+.choice input{margin-top:4px;accent-color:var(--accent)}
+.choice .fix{grid-column:2;color:var(--muted);font-size:14px}
+.choice .fix b{color:var(--accent);font-weight:600}
+.choice:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.arrow{font-family:var(--f-mono);color:var(--accent)}
+
+/* action cards */
+.list{display:flex;flex-direction:column;gap:8px}
+.task{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center;padding:12px 14px;border-radius:var(--r);background:var(--bg);border:1px solid var(--line)}
+.task .what{min-width:0}
+.task .what strong{display:block}
+.task .meta{font-size:12px;color:var(--muted)}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.pill.done{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+.pill.open{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.pill.req{background:var(--tea-soft);color:var(--tea)}
+
+/* points */
+.points{display:flex;align-items:baseline;gap:8px}
+.points .num{font-family:var(--f-display);font-size:44px;font-weight:800;line-height:1;color:var(--tea)}
+.meter{position:relative;height:10px;border-radius:999px;background:var(--sunk);overflow:hidden}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--tea);border-radius:999px;transition:width .4s}
+.prizes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.prize{border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--bg)}
+.prize .cost{font-family:var(--f-mono);font-size:13px;color:var(--tea)}
+.prize.ready{border-color:var(--tea);background:var(--tea-soft)}
+.rules{font-size:13px;color:var(--muted)}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;z-index:20;max-width:calc(100% - 32px)}
+.callout{padding:14px;border-radius:var(--r);background:var(--accent-soft);display:flex;flex-direction:column;gap:4px}
+.callout .big{font-family:var(--f-display);font-weight:700;font-size:18px}
+.empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
+
+/* teacher */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{background:none;border-radius:8px 8px 0 0;color:var(--muted);padding:10px 14px;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{padding:14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.kpi .v{font-family:var(--f-display);font-weight:800;font-size:28px;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:12px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:4px 10px;font-size:14px}
+.bar .track{grid-column:1/-1;height:10px;background:var(--sunk);border-radius:999px;overflow:hidden;display:flex}
+.bar .track i{display:block;height:100%}
+.bar .n{text-align:right}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+.chart{overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:420px;height:auto}
+.chart text{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:820px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.clicky{cursor:pointer}
+tr.clicky:hover td{background:var(--sunk)}
+tr.detail td{background:var(--bg)}
+.edit-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center}
+@media (max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+@media (max-width:480px){.prizes{grid-template-columns:1fr}.edit-row{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap" id="app">
+  <header class="top">
+    <div>
+      <p class="eyebrow">Correction system</p>
+      <h1>Make It Right</h1>
+    </div>
+    <div class="row" style="align-items:center"><p class="tagline">Every mistake has a matching action that builds the opposite habit. Admitting it is encouraged, never shamed.</p><button class="btn-ghost small" id="adminBtn" data-act="admin">Admin</button></div>
+  </header>
+  <div id="view"><div class="empty">Loading…</div></div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const DEFAULT_TYPES=[
+  {key:"cheat_test",label:"Cheated on a test",action:"Study one full chapter"},
+  {key:"partial_cheat",label:"Partly cheated (peeked or copied part)",action:"Solve one complete practice paper"},
+  {key:"backbiting",label:"Backbiting (spoke badly about someone behind their back)",action:"Say something good about that person"}
+];
+const PRIZES=[{key:"tea",label:"Cup of tea",cost:10},{key:"snack",label:"Snack",cost:20},{key:"chocolate",label:"Chocolate",cost:30}];
+const PTS_ADMIT=2, PTS_DONE=3;
+
+let db=null,user=null,downloads=null,me={id:null},isOwner=false,isTeacher=false,showLogin=false,loginErr="";
+try{isTeacher=sessionStorage.getItem("mir_admin")==="1"}catch(e){}
+let types=DEFAULT_TYPES.slice();
+let mine={label:"",entries:[],redemptions:[]};
+let all=[]; // teacher: [{id, ...doc}]
+let names={};
+let tab="overview", openStudent=null, writing=Promise.resolve();
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+const fmt=ts=>new Date(ts).toLocaleDateString(undefined,{month:"short",day:"numeric"});
+const typeOf=k=>types.find(t=>t.key===k)||{label:k,action:"Action set by teacher"};
+function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2600)}
+function pointsOf(d){
+  const e=d.entries||[],r=d.redemptions||[];
+  const earned=e.length*PTS_ADMIT+e.filter(x=>x.status==="done").length*PTS_DONE;
+  const spent=r.reduce((s,x)=>s+(x.cost||0),0);
+  return {earned,spent,balance:earned-spent};
+}
+
+/* ---------- storage: Claude page store when available, otherwise this browser ---------- */
+let localMode=false;
+const LS="make_it_right_v1";
+function lsGet(){ try{ return JSON.parse(localStorage.getItem(LS))||{logs:{}}; }catch(e){ return {logs:{}}; } }
+function lsPut(d){ try{ localStorage.setItem(LS,JSON.stringify(d)); }catch(e){ toast("This browser blocked saving"); } }
+const keyFor=name=>"s_"+name.trim().toLowerCase().replace(/[^a-z0-9Ѐ-ӿ]+/g,"_").slice(0,60);
+function loadLocal(){
+  const d=lsGet();
+  if(Array.isArray(d.types)&&d.types.length) types=d.types;
+  all=Object.entries(d.logs||{}).map(([id,v])=>({id,...v}));
+  if(me.id&&d.logs[me.id]){ const x=d.logs[me.id]; mine={label:x.label,entries:x.entries||[],redemptions:x.redemptions||[]}; }
+}
+async function writeLog(id,data){
+  if(localMode){ const d=lsGet(); d.logs[id]={...(d.logs[id]||{}),...data}; lsPut(d); loadLocal(); render(); return; }
+  return db.doc("logs/"+id).set(data);
+}
+async function patchLog(id,data){
+  if(localMode){ return writeLog(id,data); }
+  return db.doc("logs/"+id).update(data);
+}
+async function writeTypes(list){
+  if(localMode){ const d=lsGet(); d.types=list; lsPut(d); return; }
+  return db.doc("config/actions").set({types:list});
+}
+function startLocal(){ localMode=true; isOwner=true; loadLocal(); render(); }
+
+/* ---------- boot ---------- */
+render();
+(async()=>{
+  if(!window.claude||typeof window.claude.use!=="function") return startLocal();
+  const t=new Promise(r=>setTimeout(()=>r(null),6000));
+  let res; try{ res=await Promise.race([Promise.all([claude.use("db"),claude.use("user"),claude.use("downloads")]),t]); }catch(e){ res=null; }
+  if(!res||!res[0]||!res[1]) return startLocal();
+  [db,user,downloads]=res;
+  try{
+    me.id=await user.id();
+    isOwner=await user.isOwner();
+  }catch(e){ return startLocal(); }
+  if(!me.id) return startLocal();
+  db.doc("config/actions").onSnapshot(s=>{ if(s.exists&&Array.isArray(s.data().types)&&s.data().types.length) types=s.data().types; render(); },()=>{});
+  if(isOwner){
+    db.collection("logs").onSnapshot(qs=>{ all=qs.docs.map(d=>({id:d.id,...d.data()})); resolveNames(); render(); },()=>{});
+  }
+  db.doc("logs/"+me.id).onSnapshot(s=>{ if(s.exists){const d=s.data(); mine={label:d.label||"",entries:d.entries||[],redemptions:d.redemptions||[]};} render(); },()=>{});
+  render();
+})();
+
+async function resolveNames(){
+  if(!user) return;
+  try{ const ps=await user.profiles(all.map(d=>d.id)); for(const id in ps) names[id]=ps[id]?.name||""; render(); }catch(e){}
+}
+const displayName=d=>d.label||names[d.id]||"Unnamed student";
+
+function saveMine(){
+  const snap={label:mine.label,entries:mine.entries,redemptions:mine.redemptions,updated:Date.now()};
+  if(!me.id) return Promise.resolve();
+  writing=writing.then(()=>writeLog(me.id,snap)).catch(()=>toast("Couldn't save. Ask your teacher for Contributor access."));
+  return writing;
+}
+
+/* ---------- render ---------- */
+function render(keep=true){
+  const v=$("#view");
+  const ae=document.activeElement, focus=ae?.id, sel=ae&&"selectionStart" in ae?ae.selectionStart:null;
+  const note=$("#note")?.value, mt=document.querySelector("input[name=mtype]:checked")?.value;
+  const edits={}; document.querySelectorAll(".edit-row input").forEach(i=>edits[i.id]=i.value);
+  $("#adminBtn").textContent=isTeacher?"Log out":"Admin";
+  if(showLogin&&!isTeacher){ $("#app").classList.add("narrow"); v.innerHTML=loginHTML(); }
+  else if(isTeacher){ $("#app").classList.remove("narrow"); v.innerHTML=teacherHTML(); }
+  else { $("#app").classList.add("narrow"); v.innerHTML=studentHTML(); }
+  if(keep){
+  if(note!=null&&$("#note")) $("#note").value=note;
+  if(mt){const r=document.getElementById("m_"+mt); if(r) r.checked=true;}
+  for(const id in edits){const i=document.getElementById(id); if(i) i.value=edits[id];}
+  }
+  const f=focus&&document.getElementById(focus); if(f){f.focus(); try{if(sel!=null) f.setSelectionRange(sel,sel);}catch(e){}}
+}
+
+/* ---------- student ---------- */
+function loginHTML(){
+  return `<form class="panel" id="loginForm" autocomplete="off">
+    <h2>Admin login</h2>
+    <label class="field" for="lu">Login<input type="text" id="lu" autocomplete="off"></label>
+    <label class="field" for="lp">Password<input type="password" id="lp" autocomplete="off" style="font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%"></label>
+    ${loginErr?`<p style="color:var(--bad)">${esc(loginErr)}</p>`:""}
+    <div class="row"><button class="btn" type="submit">Log in</button><button class="btn-ghost" type="button" data-act="cancel-login">Back</button></div>
+  </form>`;
+}
+function studentHTML(){
+  const open=mine.entries.filter(e=>e.status!=="done").sort((a,b)=>b.ts-a.ts);
+  return `<div style="display:flex;flex-direction:column;gap:16px">
+  <section class="panel">
+    <h2>Mistakes and their actions</h2>
+    <p class="muted">Every mistake is fixed by a connected action. If one of these happened, tap “I did this”, then do the action.</p>
+    <label class="field" for="label">Your name and class
+      <input type="text" id="label" placeholder="e.g. Aziza, 7B" value="${esc(mine.label)}" maxlength="60">
+    </label>
+    <div class="list">
+      ${types.map(t=>`<div class="task"><div class="what"><strong>${esc(t.label)}</strong><span class="meta"><span class="arrow">→</span> ${esc(t.action)}</span></div><button class="btn small" data-act="admit" data-type="${esc(t.key)}">I did this</button></div>`).join("")}
+    </div>
+  </section>
+  <section class="panel">
+    <h2>My actions to do</h2>
+    ${open.length?`<div class="list">${open.map(e=>`<div class="task"><div class="what"><strong>${esc(typeOf(e.type).action)}</strong><span class="meta">For: ${esc(typeOf(e.type).label)} · ${fmt(e.ts)}</span></div><button class="btn small" data-act="done" data-id="${e.id}">Done</button></div>`).join("")}</div>`
+      :`<div class="empty">Nothing to fix right now.</div>`}
+  </section></div>`;
+}
+
+/* ---------- teacher ---------- */
+function flatEntries(){ const out=[]; for(const d of all) for(const e of (d.entries||[])) out.push({...e,sid:d.id}); return out; }
+function teacherHTML(){
+  const tabs=[["overview","Overview"],["students","Students & prizes"],["prizes","Prize history"],["actions","Mistakes & actions"]];
+  const pend=all.reduce((n,d)=>n+(d.redemptions||[]).filter(r=>r.status!=="given").length,0);
+  let body="";
+  if(tab==="overview") body=overviewHTML();
+  if(tab==="students") body=studentsHTML();
+  if(tab==="prizes") body=prizesHTML();
+  if(tab==="actions") body=actionsHTML();
+  return `<div style="display:flex;flex-direction:column;gap:16px">
+    ${isOwner?"":`<div class="callout"><span class="big">Student logs are hidden on this account</span><span>Only the page owner's Claude account can load the class data, so students' entries stay private even if someone learns the password.</span></div>`}
+    <div class="row" style="justify-content:space-between">
+      <div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" aria-selected="${tab===k}" data-act="tab" data-tab="${k}">${l}</button>`).join("")}</div>
+      <div class="row"><button class="btn-ghost small" data-act="csv">Export CSV</button></div>
+    </div>${body}</div>`;
+}
+function overviewHTML(){
+  const E=flatEntries();
+  if(!E.length) return `<div class="panel"><h2>No entries yet</h2><p class="muted">Share this page with your students as <b>Contributors</b>. When they admit a mistake or finish an action, it shows up here: totals, the most common mistakes, completion rates and weekly trends.</p></div>`;
+  const done=E.filter(e=>e.status==="done").length;
+  const students=all.filter(d=>(d.entries||[]).length).length;
+  const given=all.reduce((n,d)=>n+(d.redemptions||[]).filter(r=>r.status==="given").length,0);
+  const byType=types.map(t=>{const x=E.filter(e=>e.type===t.key);return {t,n:x.length,d:x.filter(e=>e.status==="done").length}});
+  const other=E.filter(e=>!types.some(t=>t.key===e.type));
+  if(other.length) byType.push({t:{label:"Removed mistake types"},n:other.length,d:other.filter(e=>e.status==="done").length});
+  const max=Math.max(1,...byType.map(b=>b.n));
+  // weekly trend, last 8 weeks
+  const wk=7*864e5, now=Date.now(), start=new Date(); start.setHours(0,0,0,0); start.setDate(start.getDate()-(start.getDay()+6)%7);
+  const weeks=[...Array(8)].map((_,i)=>{const s=start.getTime()-(7-i)*wk; const x=E.filter(e=>e.ts>=s&&e.ts<s+wk); return {s,admit:x.length,done:E.filter(e=>e.doneTs>=s&&e.doneTs<s+wk).length};});
+  return `<div class="kpis">
+      <div class="kpi"><span class="v">${E.length}</span><span class="l">Mistakes admitted</span></div>
+      <div class="kpi"><span class="v">${Math.round(done/E.length*100)}%</span><span class="l">Actions completed (${done}/${E.length})</span></div>
+      <div class="kpi"><span class="v">${students}</span><span class="l">Students who logged</span></div>
+      <div class="kpi"><span class="v">${given}</span><span class="l">Prizes handed out</span></div>
+    </div>
+    <div class="grid2">
+      <section class="panel"><h3>Mistakes by type</h3>
+        <div class="legend"><span style="--c:var(--accent)">Action done</span><span style="--c:var(--warn)">Still open</span></div>
+        <div class="bars">${byType.map(b=>`<div class="bar"><span>${esc(b.t.label)}</span><span class="n mono">${b.n}</span><div class="track"><i style="width:${b.d/max*100}%;background:var(--accent)"></i><i style="width:${(b.n-b.d)/max*100}%;background:var(--warn)"></i></div></div>`).join("")}</div>
+      </section>
+      <section class="panel"><h3>Last 8 weeks</h3>
+        <div class="legend"><span style="--c:var(--accent)">Admitted</span><span style="--c:var(--tea)">Actions done</span></div>
+        <div class="chart">${weekChart(weeks)}</div>
+      </section>
+    </div>`;
+}
+function weekChart(w){
+  const W=460,H=190,L=30,B=26,T=10,R=6, m=Math.max(2,...w.map(x=>Math.max(x.admit,x.done)));
+  const top=Math.ceil(m/2)*2, ih=H-B-T, cw=(W-L-R)/w.length, bw=Math.min(16,cw/3);
+  const y=v=>T+ih-v/top*ih;
+  let g=""; for(let i=0;i<=2;i++){const v=top*i/2; g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end">${v}</text>`;}
+  const bars=w.map((x,i)=>{const cx=L+cw*i+cw/2;return `<rect x="${cx-bw-1}" y="${y(x.admit)}" width="${bw}" height="${ih-(y(x.admit)-T)}" fill="var(--accent)" rx="2"/><rect x="${cx+1}" y="${y(x.done)}" width="${bw}" height="${ih-(y(x.done)-T)}" fill="var(--tea)" rx="2"/><text x="${cx}" y="${H-8}" text-anchor="middle">${fmt(x.s)}</text>`}).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Weekly admitted mistakes and completed actions">${g}${bars}</svg>`;
+}
+function studentsHTML(){
+  if(!all.length) return `<div class="empty">No students yet. They appear here after their first entry.</div>`;
+  const rows=all.map(d=>{const e=d.entries||[];const p=pointsOf(d);const last=Math.max(0,...e.map(x=>Math.max(x.ts,x.doneTs||0)));return {d,n:e.length,done:e.filter(x=>x.status==="done").length,p,last}}).sort((a,b)=>b.last-a.last);
+  return `<section class="panel"><p class="muted">Points: +${PTS_ADMIT} for admitting a mistake, +${PTS_DONE} for finishing its action. Prizes: ${PRIZES.map(p=>p.label+" "+p.cost).join(", ")} points. Click a student to see their log.</p><div class="tablewrap"><table>
+    <thead><tr><th>Student</th><th class="num">Admitted</th><th class="num">Actions done</th><th class="num">Open</th><th class="num">Points</th><th>Last activity</th><th>Give prize</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr class="clicky" data-act="open-student" data-id="${r.d.id}"><td><strong>${esc(displayName(r.d))}</strong></td><td class="num">${r.n}</td><td class="num">${r.done}</td><td class="num">${r.n-r.done}</td><td class="num">${r.p.balance} <span class="muted">/ ${r.p.earned}</span></td><td>${r.last?fmt(r.last):"—"}</td><td><div class="row" style="flex-wrap:nowrap">${PRIZES.map(x=>`<button class="btn-tea small" data-act="give" data-sid="${r.d.id}" data-prize="${x.key}" ${r.p.balance>=x.cost?"":"disabled"} title="${x.cost} points">${x.key==="tea"?"Tea":x.label}</button>`).join("")}</div></td></tr>
+      ${openStudent===r.d.id?`<tr class="detail"><td colspan="7"><div class="list">${(r.d.entries||[]).slice().sort((a,b)=>b.ts-a.ts).map(e=>`<div class="task"><div class="what"><strong>${esc(typeOf(e.type).label)}</strong><span class="meta">→ ${esc(typeOf(e.type).action)} · ${fmt(e.ts)}${e.note?` · “${esc(e.note)}”`:""}</span></div><span class="pill ${e.status==="done"?"done":"open"}">${e.status==="done"?"Done "+fmt(e.doneTs||e.ts):"Open"}</span></div>`).join("")||`<div class="empty">No entries.</div>`}</div></td></tr>`:""}`).join("")}
+    </tbody></table></div></section>`;
+}
+function prizesHTML(){
+  const g=[]; for(const d of all) for(const r of (d.redemptions||[])) g.push({...r,name:displayName(d)});
+  g.sort((a,b)=>(b.givenTs||b.ts)-(a.givenTs||a.ts));
+  return `<section class="panel"><h3>Prizes handed out</h3>
+    ${g.length?`<div class="list">${g.map(r=>`<div class="task"><div class="what"><strong>${esc(r.name)} · ${esc(r.label)}</strong><span class="meta">${r.cost} pts · ${fmt(r.givenTs||r.ts)}</span></div><span class="pill done">Given</span></div>`).join("")}</div>`:`<div class="empty">No prizes given yet. Give them from the Students & prizes tab.</div>`}
+  </section>`;
+}
+function actionsHTML(){
+  return `<section class="panel"><h3>Each mistake and the action that fixes it</h3>
+    <p class="muted">Students pick from this list. Changes show for everyone right away.</p>
+    <div class="list">${types.map((t,i)=>`<div class="edit-row"><input type="text" id="tl_${i}" value="${esc(t.label)}" aria-label="Mistake"><input type="text" id="ta_${i}" value="${esc(t.action)}" aria-label="Connected action"><button class="btn-ghost small" data-act="del-type" data-i="${i}">Remove</button></div>`).join("")}</div>
+    <div class="edit-row"><input type="text" id="new_l" placeholder="New mistake, e.g. Lied to a teacher"><input type="text" id="new_a" placeholder="Connected action, e.g. Tell the truth about it today"><button class="btn-ghost small" data-act="add-type">Add</button></div>
+    <div class="row"><button class="btn" data-act="save-types">Save list</button><span class="muted">Points: +${PTS_ADMIT} for admitting, +${PTS_DONE} for finishing the action. Prizes: ${PRIZES.map(p=>p.label+" "+p.cost).join(", ")}.</span></div>
+  </section>`;
+}
+function readTypeEdits(){ return types.map((t,i)=>({key:t.key,label:($("#tl_"+i)?.value||t.label).trim(),action:($("#ta_"+i)?.value||t.action).trim()})); }
+async function saveTypes(list){ types=list; render(false); try{await writeTypes(list); toast("List saved");}catch(e){toast("Couldn't save the list");} }
+
+/* ---------- events ---------- */
+document.addEventListener("submit",e=>{
+  if(e.target.id!=="loginForm") return; e.preventDefault();
+  if($("#lu").value.trim()==="admin"&&$("#lp").value==="admin"){ isTeacher=true; showLogin=false; try{sessionStorage.setItem("mir_admin","1")}catch(err){} render(false); }
+  else { loginErr="Wrong login or password."; render(false); }
+});
+document.addEventListener("input",e=>{
+  if(e.target.id==="label"){
+    mine.label=e.target.value;
+    if(localMode){ clearTimeout(saveMine.t); saveMine.t=setTimeout(()=>{ const n=mine.label.trim(); me.id=n?keyFor(n):null; const d=lsGet(); const x=me.id&&d.logs[me.id]; mine={label:n,entries:x?.entries||[],redemptions:x?.redemptions||[]}; render(); },500); return; }
+    clearTimeout(saveMine.t); saveMine.t=setTimeout(saveMine,700);
+  }
+});
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-act]"); if(!b) return;
+  const a=b.dataset.act;
+  if(a==="admit"){
+    if(!me.id){ $("#label")?.focus(); return toast("Write your name and class first"); }
+    const type=b.dataset.type;
+    mine.entries.push({id:uid(),ts:Date.now(),type,note:"",status:"open"});
+    render(false); await saveMine(); toast(`Thank you for being honest. Next: ${typeOf(type).action}`);
+  }
+  if(a==="done"){ const x=mine.entries.find(z=>z.id===b.dataset.id); if(x){x.status="done";x.doneTs=Date.now(); render(); await saveMine(); toast("Well done.");} }
+  if(a==="tab"){ tab=b.dataset.tab; render(); }
+  if(a==="admin"){ if(isTeacher){isTeacher=false;try{sessionStorage.removeItem("mir_admin")}catch(e){} toast("Logged out");} else {showLogin=true;loginErr="";} render(false); }
+  if(a==="cancel-login"){ showLogin=false; render(false); }
+  if(a==="open-student"){ openStudent=openStudent===b.dataset.id?null:b.dataset.id; render(); }
+  if(a==="give"){
+    const d=all.find(x=>x.id===b.dataset.sid), p=PRIZES.find(x=>x.key===b.dataset.prize); if(!d||!p) return;
+    if(pointsOf(d).balance<p.cost) return toast("Not enough points");
+    const reds=(d.redemptions||[]).concat([{id:uid(),prize:p.key,label:p.label,cost:p.cost,ts:Date.now(),givenTs:Date.now(),status:"given"}]);
+    try{ await patchLog(d.id,{redemptions:reds}); toast(`${p.label} given to ${displayName(d)}`); }catch(err){ toast("Couldn't save. Try again."); }
+  }
+  if(a==="del-type"){ const l=readTypeEdits(); l.splice(+b.dataset.i,1); types=l; render(false); }
+  if(a==="add-type"){ const l=$("#new_l").value.trim(), ac=$("#new_a").value.trim(); if(!l||!ac) return toast("Fill in both the mistake and its action"); const list=readTypeEdits(); list.push({key:"t_"+uid(),label:l,action:ac}); types=list; render(false); }
+  if(a==="save-types"){ const l=readTypeEdits().filter(t=>t.label&&t.action); if(!l.length) return toast("Keep at least one mistake type"); saveTypes(l); }
+  if(a==="csv"){
+    const rows=[["student","date","mistake","action","status","done_date","note"]];
+    for(const d of all) for(const x of (d.entries||[])) rows.push([displayName(d),new Date(x.ts).toISOString().slice(0,10),typeOf(x.type).label,typeOf(x.type).action,x.status,x.doneTs?new Date(x.doneTs).toISOString().slice(0,10):"",x.note||""]);
+    const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+    if(!downloads){ try{ const u=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); const l=document.createElement("a"); l.href=u; l.download="make-it-right-log.csv"; document.body.appendChild(l); l.click(); l.remove(); }catch(err){ toast("Download isn't available here"); } return; }
+    try{ await downloads.save({filename:"make-it-right-log.csv",data:csv}); }catch(err){}
+  }
+});
+</script>
