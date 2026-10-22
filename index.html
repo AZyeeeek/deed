@@ -360,7 +360,7 @@ async function saveTypes(list){ types=list; render(false); try{await writeTypes(
 /* ---------- events ---------- */
 document.addEventListener("submit",e=>{
   if(e.target.id!=="loginForm") return; e.preventDefault();
-  if($("#lu").value.trim()==="admin"&&$("#lp").value==="admin"){ isTeacher=true; showLogin=false; try{sessionStorage.setItem("mir_admin","1")}catch(err){} render(false); }
+  if($("#lu").value.trim()==="adminaz"&&$("#lp").value==="adminaz"){ isTeacher=true; showLogin=false; try{sessionStorage.setItem("mir_admin","1")}catch(err){} render(false); }
   else { loginErr="Wrong login or password."; render(false); }
 });
 document.addEventListener("input",e=>{
